@@ -52,9 +52,9 @@ export default defineConfig({
 	...
 	plugins: [
 		laravelTranslations({
-			// # TBC: To include JSON files
+			// # Include JSON translation files in addition to PHP
 			includeJson: false,
-			// # Declare: namespace (string|false)
+			// # Namespace to nest translations under (string | false)
 			namespace: false,
 		}),
 	],
@@ -90,30 +90,6 @@ app.use(i18n)
 app.mount('#app')
 
 // Now the app has started!
-...
-```
-
-## Usage in Vue 2.x.x
-
-```js
-// app.js
-import VueI18n from 'vue-i18n';
-Vue.use(VueI18n);
-
-Vue.config.productionTip = false;
-
-var i18n = new VueI18n({
-  locale: 'en',
-  fallbackLocale: 'en-gb',
-  messages: import.meta.env.VITE_LARAVEL_TRANSLATIONS
-});
-
-...
-new Vue({
-  router,
-  i18n,
-  render: (h) => h(App),
-}).$mount('#app');
 ...
 ```
 
@@ -223,9 +199,48 @@ When this option is enabled, the plugin will modify the `import` statement as fo
 const { default: translations } = await import(fullPath, { with: { type: "json" } });
 ```
 
+## Interpolation
+
+Laravel placeholders use a `:name` syntax (e.g. `Welcome :name`). If your i18n framework expects a different syntax, pass an `interpolation` option to rewrite them at build time:
+
+```js
+...
+plugins: [
+    laravelTranslations({
+        // Rewrites `:name` to `{name}` (e.g. for vue-i18n)
+        interpolation: { prefix: '{', suffix: '}' },
+    }),
+],
+```
+
 ## Hot-Module Replacement (HMR)
 
 When running `vite` with dev server running, any changes on any detected `lang/` folder for `.{php,json}` files will restart `vite` dev server so that the language configurations can be updated.
+
+## Development
+
+Requires Node 24+.
+
+```sh
+pnpm install
+pnpm run lint    # oxlint
+pnpm run format  # prettier
+pnpm run test    # vitest
+pnpm run build   # vite (Rolldown) -> dist/
+```
+
+## Releasing
+
+Releases are automated with [release-please](https://github.com/googleapis/release-please). Conventional commits on `main` keep a release PR up to date; merging it tags the release and publishes to npm via the `Release` workflow.
+
+Publishing uses npm [Trusted Publishing](https://docs.npmjs.com/trusted-publishers) (OIDC) — no `NPM_TOKEN` secret is stored. Provenance is generated automatically.
+
+**One-time bootstrap.** npm only lets you configure a trusted publisher for a package that already exists, so the very first `1.0.0` cannot use OIDC. Either:
+
+- run `npm trust` (npm ≥ 11.10) to register the trusted publisher without publishing, **or**
+- publish `1.0.0` once manually (`npm publish --access public` with a local login), then
+
+configure it on npmjs.com under the package's **Settings → Trusted Publisher**: add this GitHub repository with workflow `release.yml`. Every subsequent release then publishes tokenless via the `Release` workflow.
 
 ## Changes
 
