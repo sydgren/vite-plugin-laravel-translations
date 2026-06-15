@@ -20,7 +20,6 @@ export default async function laravelTranslations(pluginConfiguration: Translati
     includeJson: false,
     assertJsonImport: false,
     absoluteLanguageDirectory: null,
-    useGlobalVar: false,
   };
 
   // # Retrieve: Laravel Path (Absolute)
@@ -32,14 +31,13 @@ export default async function laravelTranslations(pluginConfiguration: Translati
 
     // # Plugin: Configuration Hook (like construct)
     async config() {
-      // # Merge: Configrations
+      // # Merge: Configurations
       pluginConfiguration = Object.assign({}, defaultConfigurations, pluginConfiguration);
 
-      // # Assign: Translations as LARAVEL_TRANSLATIONS/import.meta.env.VITE_LARAVEL_TRANSLATIONS
-      const translationsVar = pluginConfiguration.useGlobalVar ? "LARAVEL_TRANSLATIONS" : "import.meta.env.VITE_LARAVEL_TRANSLATIONS";
+      // # Assign: Translations as import.meta.env.VITE_LARAVEL_TRANSLATIONS
       return {
         define: {
-          [translationsVar]: await buildTranslations(absPathForLangDir, pluginConfiguration),
+          "import.meta.env.VITE_LARAVEL_TRANSLATIONS": await buildTranslations(absPathForLangDir, pluginConfiguration),
         },
       };
     },

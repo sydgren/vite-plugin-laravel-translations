@@ -1,39 +1,38 @@
 {
-  "name": "vite-plugin-laravel-translations",
-  "version": "0.3.1",
+  "name": "@sydgren/vite-plugin-laravel-translations",
+  "version": "1.0.0",
   "private": false,
-  "description": "Vite Plugin to make Laravel Translations globally available as JSON field.",
-  "author": "Dcode Group",
+  "description": "Vite 8 plugin that makes Laravel translations available as a JSON variable for i18n frameworks.",
+  "author": "Henrik Nordquist",
   "type": "module",
   "main": "dist/vite.js",
   "files": [
-    "./dist/",
-    "./types/",
-    "README.md",
-    "package.json",
-    "tsconfig.json",
-    "vite.config.ts",
-    "eslint.config.ts",
-    ".prettierrc",
-    ".prettierignore"
+    "dist",
+    "types",
+    "README.md"
   ],
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
       "import": "./dist/vite.js",
-      "require": "./dist/vite.umd.cjs",
+      "require": "./dist/vite.cjs",
       "default": "./dist/vite.js"
     }
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "vite build",
     "build:watch": "vite build --watch",
-    "lint": "eslint src/",
-    "lint:fix": "eslint src/ --fix",
+    "lint": "oxlint src/",
+    "lint:fix": "oxlint src/ --fix",
+    "format": "prettier --write src/ types/",
     "test": "vitest run"
   },
   "keywords": [
     "vite",
+    "vite8",
     "plugin",
     "vite-plugin",
     "laravel",
@@ -45,42 +44,28 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.26.0",
-    "@types/eslint": "^9.6.1",
-    "@types/jest": "^29.5.14",
-    "@types/node": "^22.15.3",
-    "@typescript-eslint/eslint-plugin": "^8.31.1",
-    "eslint": "^9.26.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.3.1",
-    "globals": "^16.0.0",
-    "jiti": "^2.4.2",
-    "php-parser": "^3.2.3",
-    "prettier": "^3.5.3",
-    "rimraf": "^6.0.1",
-    "semantic-release": "^24.2.3",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.31.1",
-    "vite": "^6.3.5",
-    "vitest": "^3.1.2"
+    "@types/node": "^24.0.0",
+    "oxlint": "^1.70.0",
+    "prettier": "^3.8.4",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.16",
+    "vitest": "^4.1.9"
   },
   "dependencies": {
-    "glob": "^11.0.2",
-    "php-array-reader": "^2.1.2"
+    "glob": "^13.0.6",
+    "php-array-reader": "^2.1.4"
   },
   "peerDependencies": {
-    "vite": "^3.2.11 || ^4.0.0 || ^5.1.3 || ^6.0"
+    "vite": "^8.0.0"
   },
   "bugs": {
-    "url": "https://github.com/dcodegroup/vite-plugin-laravel-translations/issues"
+    "url": "https://github.com/sydgren/vite-plugin-laravel-translations/issues"
   },
   "engines": {
-    "node": ">= 12.0.0",
-    "pnpm": ">= 7.0.0"
+    "node": ">=24"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dcodegroup/vite-plugin-laravel-translations.git"
+    "url": "git+https://github.com/sydgren/vite-plugin-laravel-translations.git"
   }
 }

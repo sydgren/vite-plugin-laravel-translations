@@ -1,14 +1,16 @@
+type Mergeable = Record<string, unknown>;
+
+const isObject = (value: unknown): value is Mergeable => !!value && typeof value === "object";
+
 /**
  *
  * Deep merge two objects together.
  *
  * @param target - Target object to merge into
  * @param source - Source object to merge from
- * @returns object
+ * @returns unknown
  */
-export const mergeDeep = (target: any, source: any) => {
-  const isObject = (obj: any) => obj && typeof obj === "object";
-
+export const mergeDeep = (target: unknown, source: unknown): unknown => {
   if (!isObject(target) || !isObject(source)) {
     return source;
   }
@@ -20,7 +22,7 @@ export const mergeDeep = (target: any, source: any) => {
     if (Array.isArray(targetValue) && Array.isArray(sourceValue)) {
       target[key] = targetValue.concat(sourceValue);
     } else if (isObject(targetValue) && isObject(sourceValue)) {
-      target[key] = mergeDeep(Object.assign({}, targetValue), sourceValue);
+      target[key] = mergeDeep({ ...targetValue }, sourceValue);
     } else {
       target[key] = sourceValue;
     }

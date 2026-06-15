@@ -13,22 +13,14 @@ import { readFileSync } from "node:fs";
  * 	@return number - Laravel Version
  */
 export const determineLaravelVersion = (composerPath: string = "composer.json"): number => {
-  try {
-    // # Read: Composer.json to determine the file
-    const fileData = readFileSync(composerPath, { encoding: "utf8" });
+  // # Read: composer.json and parse it
+  const composer = JSON.parse(readFileSync(composerPath, { encoding: "utf8" }));
 
-    // Extract: Laravel Version
-    const composer = JSON.parse(fileData);
+  // # Extract: Laravel framework version using the first (0) index
+  const [laravelVersionString] = composer.require["laravel/framework"].split(".");
 
-    // # Extract: Laravel Version using the first (0) index
-    const [laravelVersionString] = composer.require["laravel/framework"].split(".");
-
-    // # Return: Laravel Version as Integer
-    return parseInt(laravelVersionString.replace(/\D/g, ""));
-  } catch (exception: any) {
-    // Throw exception if composer.json file is not found
-    throw exception;
-  }
+  // # Return: Laravel Version as Integer
+  return parseInt(laravelVersionString.replace(/\D/g, ""));
 };
 
 /**
