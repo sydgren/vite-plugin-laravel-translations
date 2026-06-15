@@ -26,6 +26,7 @@ jobs:
     runs-on: ${{ vars.RUNS_ON || 'ubuntu-24.04' }}
     permissions:
       contents: read
+      # Required for npm Trusted Publishing (OIDC) and provenance
       id-token: write
     steps:
       - uses: actions/checkout@v4
@@ -46,7 +47,11 @@ jobs:
       - name: Build package
         run: pnpm run build
 
+      # Trusted Publishing (OIDC) requires npm >= 11.5.1
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      # No token needed: authenticates via OIDC Trusted Publishing,
+      # which also generates provenance automatically.
       - name: Publish to npm
-        run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
