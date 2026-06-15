@@ -18,7 +18,6 @@ export default async function laravelTranslations(pluginConfiguration: Translati
   const defaultConfigurations: TranslationConfiguration = {
     namespace: false,
     includeJson: false,
-    assertJsonImport: false,
     absoluteLanguageDirectory: null,
   };
 
@@ -30,14 +29,14 @@ export default async function laravelTranslations(pluginConfiguration: Translati
     name: "laravelTranslations",
 
     // # Plugin: Configuration Hook (like construct)
-    async config() {
+    config() {
       // # Merge: Configurations
       pluginConfiguration = Object.assign({}, defaultConfigurations, pluginConfiguration);
 
       // # Assign: Translations as import.meta.env.VITE_LARAVEL_TRANSLATIONS
       return {
         define: {
-          "import.meta.env.VITE_LARAVEL_TRANSLATIONS": await buildTranslations(absPathForLangDir, pluginConfiguration),
+          "import.meta.env.VITE_LARAVEL_TRANSLATIONS": buildTranslations(absPathForLangDir, pluginConfiguration),
         },
       };
     },

@@ -38,19 +38,12 @@ export const configureNamespaceIfNeeded = (pathSplit: string[], namespace?: stri
  *
  * @param fileExtension - The file extension
  * @param file - The file path
- * @returns Promise<any> - The translation content
+ * @returns object - The translation content
  */
-export const translationContentByFileExtension = async (fileExtension: string, file: string, assertJsonImport?: boolean | undefined): Promise<string> => {
-  if (fileExtension === ".php") {
-    return fromString(readFileSync(file, "utf8"));
-  }
+export const translationContentByFileExtension = (fileExtension: string, file: string): object => {
+  const contents = readFileSync(file, "utf8");
 
-  const fullPath = `${process.cwd()}/${file}`;
-
-  // When using `pnpm` as package manager or we don't have the `.{mjs,mts}` extension in the vite config file
-  // the import statement does not work as expected and the `import` function does not have the `with` property
-  const { default: translations } = await import(fullPath, { ...(assertJsonImport && { with: { type: "json" } }) });
-  return translations;
+  return fileExtension === ".php" ? fromString(contents) : JSON.parse(contents);
 };
 
 /**
@@ -70,7 +63,7 @@ export const generateNestedObjectStructure = (pathSplit: string[], value: unknow
  * @param interpolation - An object with prefix and suffix to be used by interpolation
  * @returns - The object structure with the new interpolation
  */
-export const replaceInterpolation = (object: unknown, interpolation: InterpolationConfiguration): string => {
+export const replaceInterpolation = (object: unknown, interpolation: InterpolationConfiguration): object => {
   const interpolatedContent = `${interpolation.prefix}$1${interpolation.suffix}`;
   const objectAsString = JSON.stringify(object).replace(/:(\w+)/g, interpolatedContent);
   return JSON.parse(objectAsString);
@@ -83,48 +76,27 @@ export const replaceInterpolation = (object: unknown, interpolation: Interpolati
  * @param pluginConfiguration - Plugin configurations
  * @returns translations - Object/JSON version of Laravel Translations
  */
-export const buildTranslations = async (absLangPath: string, pluginConfiguration: TranslationConfiguration): Promise<object> => {
+export const buildTranslations = (absLangPath: string, pluginConfiguration: TranslationConfiguration): object => {
   // Define the language directory
   const langDir = pluginConfiguration.absoluteLanguageDirectory || absLangPath;
 
-  // Define the glob pattern
-  const globRegex = globPattern(pluginConfiguration.includeJson || false);
-
   // Fetch filenames as an array
-  const files = globSync(join(langDir, globRegex));
-
-  // Define initial translations
-  const initialTranslations = Promise.resolve({});
+  const files = globSync(join(langDir, globPattern(pluginConfiguration.includeJson || false)));
 
   // Create translations object
-  const translations = await files.reduce(async (accumulator, file) => {
-    const pathSeparator = sep;
-
-    // Wait for the accumulator to resolve
-    const accumulated = await accumulator;
-
-    // Extract the file path
-    const fileRaw = file.replace(langDir + pathSeparator, "");
-
-    // Extract the file extension
+  return files.reduce<object>((translations, file) => {
+    // Extract the file path, extension and path split
+    const fileRaw = file.replace(langDir + sep, "");
     const fileExtension = extname(fileRaw);
+    const pathSplit = fileRaw.replace(fileExtension, "").split(sep);
 
-    // Extract the path split
-    const pathSplit = fileRaw.replace(fileExtension, "").split(pathSeparator);
-
-    // Build the translation content
-    const translationContent = await buildContentInterpolation({
-      file,
-      fileExtension,
-      pluginConfiguration,
-    });
+    // Build the translation content and nest it under its path
+    const translationContent = buildContentInterpolation({ file, fileExtension, pluginConfiguration });
     const namespacePath = configureNamespaceIfNeeded(pathSplit, pluginConfiguration.namespace);
     const currentTranslationStructure = generateNestedObjectStructure(namespacePath, translationContent);
 
-    return mergeDeep(accumulated, currentTranslationStructure);
-  }, initialTranslations);
-
-  return translations;
+    return mergeDeep(translations, currentTranslationStructure) as object;
+  }, {});
 };
 
 /**
@@ -135,9 +107,9 @@ export const buildTranslations = async (absLangPath: string, pluginConfiguration
  * @param pluginConfiguation - Extension configuration settings
  * @returns object - The translation content with interpolation
  */
-const buildContentInterpolation = async ({ file, fileExtension, pluginConfiguration }: TranslationContentInterpolable): Promise<string> => {
+const buildContentInterpolation = ({ file, fileExtension, pluginConfiguration }: TranslationContentInterpolable): object => {
   // # Fetch: Translation content
-  const translationContent = await translationContentByFileExtension(fileExtension, file, pluginConfiguration.assertJsonImport);
+  const translationContent = translationContentByFileExtension(fileExtension, file);
 
   return pluginConfiguration.interpolation?.prefix && pluginConfiguration.interpolation?.suffix
     ? replaceInterpolation(translationContent, pluginConfiguration.interpolation)
