@@ -229,24 +229,6 @@ pnpm run test    # vitest
 pnpm run build   # vite (Rolldown) -> dist/
 ```
 
-## Releasing
-
-Releases are automated with [release-please](https://github.com/googleapis/release-please). Conventional commits on `main` keep a release PR up to date; merging it tags the release and publishes to npm via the `Release` workflow.
-
-Publishing uses npm [Trusted Publishing](https://docs.npmjs.com/trusted-publishers) (OIDC) — no `NPM_TOKEN` secret is stored. Provenance is generated automatically.
-
-**One-time bootstrap.** The npmjs.com web UI only lets you add a trusted publisher to a package that already exists. For a brand-new package, register the trust from the CLI instead (npm ≥ 11.10) — no placeholder publish needed:
-
-```sh
-npm login
-npm trust github @sydgren/vite-plugin-laravel-translations \
-  --file release.yml \
-  --repo sydgren/vite-plugin-laravel-translations \
-  -y
-```
-
-(`--file` is the workflow filename; omit `--env` since the publish job does not use a GitHub Environment.) Every release then publishes tokenless via the `Release` workflow.
-
 ## Changes
 
 For any version and breaking changes please see <a href="CHANGELOG.md">CHANGELOG.md</a>.
