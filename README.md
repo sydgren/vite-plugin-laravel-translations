@@ -235,12 +235,17 @@ Releases are automated with [release-please](https://github.com/googleapis/relea
 
 Publishing uses npm [Trusted Publishing](https://docs.npmjs.com/trusted-publishers) (OIDC) — no `NPM_TOKEN` secret is stored. Provenance is generated automatically.
 
-**One-time bootstrap.** npm only lets you configure a trusted publisher for a package that already exists, so the very first `1.0.0` cannot use OIDC. Either:
+**One-time bootstrap.** The npmjs.com web UI only lets you add a trusted publisher to a package that already exists. For a brand-new package, register the trust from the CLI instead (npm ≥ 11.10) — no placeholder publish needed:
 
-- run `npm trust` (npm ≥ 11.10) to register the trusted publisher without publishing, **or**
-- publish `1.0.0` once manually (`npm publish --access public` with a local login), then
+```sh
+npm login
+npm trust github @sydgren/vite-plugin-laravel-translations \
+  --file release.yml \
+  --repo sydgren/vite-plugin-laravel-translations \
+  -y
+```
 
-configure it on npmjs.com under the package's **Settings → Trusted Publisher**: add this GitHub repository with workflow `release.yml`. Every subsequent release then publishes tokenless via the `Release` workflow.
+(`--file` is the workflow filename; omit `--env` since the publish job does not use a GitHub Environment.) Every release then publishes tokenless via the `Release` workflow.
 
 ## Changes
 
