@@ -60,7 +60,8 @@ export const translationContentByFileExtension = async (fileExtension: string, f
  * @param all - The all object
  * @returns - The nested object structure
  */
-export const generateNestedObjectStructure = (pathSplit: string[], all: any): object => pathSplit.reverse().reduce((all, item) => ({ [item]: all }), all);
+export const generateNestedObjectStructure = (pathSplit: string[], value: unknown): object =>
+  pathSplit.toReversed().reduce<object>((acc, item) => ({ [item]: acc }), value as object);
 
 /**
  * Replace the interpolation with provided prefix and suffix
@@ -100,7 +101,7 @@ export const buildTranslations = async (absLangPath: string, pluginConfiguration
     const pathSeparator = sep;
 
     // Wait for the accumulator to resolve
-    const translations = await accumulator;
+    const accumulated = await accumulator;
 
     // Extract the file path
     const fileRaw = file.replace(langDir + pathSeparator, "");
@@ -120,7 +121,7 @@ export const buildTranslations = async (absLangPath: string, pluginConfiguration
     const namespacePath = configureNamespaceIfNeeded(pathSplit, pluginConfiguration.namespace);
     const currentTranslationStructure = generateNestedObjectStructure(namespacePath, translationContent);
 
-    return mergeDeep(translations, currentTranslationStructure);
+    return mergeDeep(accumulated, currentTranslationStructure);
   }, initialTranslations);
 
   return translations;

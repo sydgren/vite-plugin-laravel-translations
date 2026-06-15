@@ -4,22 +4,23 @@
 
 <br/>
 
-<a href="https://www.npmjs.com/package/vite-plugin-laravel-translations">![npm](https://img.shields.io/npm/v/vite-plugin-laravel-translations)</a>
-![Last Commit](https://img.shields.io/github/last-commit/dcodegroup/vite-plugin-laravel-translations)
-![npm Total Downloads](https://img.shields.io/npm/dt/vite-plugin-laravel-translations)
-<a href="https://snyk.io/advisor/npm-package/vite-plugin-laravel-translations">![Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/github/dcodegroup/vite-plugin-laravel-translations)</a>
-<a href="https://github.com/dcodegroup/vite-plugin-laravel-translations/issues">![Issues](https://img.shields.io/github/issues/dcodegroup/vite-plugin-laravel-translations)</a>
-![npm peer dependency version](https://img.shields.io/npm/dependency-version/vite-plugin-laravel-translations/peer/vite)
+<a href="https://www.npmjs.com/package/@sydgren/vite-plugin-laravel-translations">![npm](https://img.shields.io/npm/v/@sydgren/vite-plugin-laravel-translations)</a>
+![Last Commit](https://img.shields.io/github/last-commit/sydgren/vite-plugin-laravel-translations)
+<a href="https://github.com/sydgren/vite-plugin-laravel-translations/issues">![Issues](https://img.shields.io/github/issues/sydgren/vite-plugin-laravel-translations)</a>
 
 <br/>
 
 <p align="center">
-    <b>vite-plugin-laravel-translations</b> is a <b>Vite</b> plugin that retrieves <b>Laravel</b> Framework translation
+    <b>@sydgren/vite-plugin-laravel-translations</b> is a <b>Vite 8</b> plugin that retrieves <b>Laravel</b> Framework translation
     files and makes them available as a global variable for use with any other <b>i18n</b> framework plugin such as <a href="https://www.npmjs.com/package/vue-i18n">vue-i18n</a> for <b>Vue</b> or <a href="https://www.npmjs.com/package/react-i18next">react-i18next</a> for <b>React</b>.
 </p>
 
 <p align="center">
-    <b>NOTE:</b> This plugin uses Vite specific hooks (<a href="https://vitejs.dev/guide/api-plugin.html#config">config</a> & <a href="https://vitejs.dev/guide/api-plugin.html#handlehotupdate">handleHotUpdate</a>) to make the translations globally available and cannot be used as a rollup plugin.
+    <b>NOTE:</b> This plugin uses Vite specific hooks (<a href="https://vite.dev/guide/api-plugin.html#config">config</a> & <a href="https://vite.dev/guide/api-plugin.html#handlehotupdate">handleHotUpdate</a>) to make the translations globally available and cannot be used as a rollup plugin.
+</p>
+
+<p align="center">
+    Requires <b>Vite 8+</b> and <b>Node 24+</b>. This is a maintained, Vite 8-only fork of the (abandoned) <a href="https://github.com/dcodegroup/vite-plugin-laravel-translations">dcodegroup/vite-plugin-laravel-translations</a>.
 </p>
 
 ## Installation
@@ -27,25 +28,25 @@
 With [pnpm](https://pnpm.io):
 
 ```sh
-pnpm i vite-plugin-laravel-translations
+pnpm i @sydgren/vite-plugin-laravel-translations
 ```
 
 with [npm](https://www.npmjs.com):
 
 ```sh
-npm i vite-plugin-laravel-translations
+npm i @sydgren/vite-plugin-laravel-translations
 ```
 
 or with [yarn](https://yarnpkg.com):
 
 ```sh
-yarn add vite-plugin-laravel-translations
+yarn add @sydgren/vite-plugin-laravel-translations
 ```
 
 ## Setup with Vite
 
 ```js
-import laravelTranslations from 'vite-plugin-laravel-translations';
+import laravelTranslations from '@sydgren/vite-plugin-laravel-translations';
 
 export default defineConfig({
 	...
@@ -123,7 +124,7 @@ This example uses `i18nnext` and `react-i18next` packages. Refer to <a href="htt
 ### <b>Vite Config</b>
 
 ```js
-import laravelTranslations from 'vite-plugin-laravel-translations';
+import laravelTranslations from '@sydgren/vite-plugin-laravel-translations';
 
 export default defineConfig({
 	...

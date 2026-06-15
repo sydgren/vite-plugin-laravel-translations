@@ -21,14 +21,14 @@ export default defineConfig(({ command, mode }) => {
         entry: {
           vite: resolve(__dirname, "./src/vite.ts"),
         },
-        name: "vite-plugin-laravel-translations",
+        formats: ["es", "cjs"],
       },
-      rollupOptions: {
-        external: [...NODE_BUILT_IN_MODULES, "php-parser", "glob"],
+      rolldownOptions: {
+        external: [...NODE_BUILT_IN_MODULES, "php-array-reader", "glob"],
       },
     },
     optimizeDeps: {
-      exclude: [...NODE_BUILT_IN_MODULES, "php-parser", "glob"],
+      exclude: [...NODE_BUILT_IN_MODULES, "php-array-reader", "glob"],
     },
     resolve: {
       alias: {
