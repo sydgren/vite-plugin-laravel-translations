@@ -9,7 +9,8 @@ import type { HmrContext } from "vite";
 export declare interface TranslationConfiguration {
   namespace?: string | false;
   includeJson?: boolean;
-  assertJsonImport?: boolean; // Optional param to include JSON files using assert when importing translations
+  /** @deprecated No longer used — JSON files are now read directly, so no import assertion is needed. */
+  assertJsonImport?: boolean;
   absoluteLanguageDirectory?: string | null; // Optional param to override default langDir if needed
   interpolation?: InterpolationConfiguration | null;
 }

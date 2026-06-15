@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import {
   globPattern,
   configureNamespaceIfNeeded,
@@ -81,6 +82,19 @@ describe("Loader feature", () => {
       // Given
       const fileExtension = ".json";
       const file = "tests/fixtures/translations/translations.json";
+      const expectedContent = { key1: "value1", key2: "value2" };
+
+      // When
+      const content = await translationContentByFileExtension(fileExtension, file);
+
+      // Then
+      expect(content).toEqual(expectedContent);
+    });
+
+    it("should return the translation content for JSON files at an absolute path", async () => {
+      // Given — globSync yields absolute paths in production, which previously broke JSON loading
+      const fileExtension = ".json";
+      const file = resolve("tests/fixtures/translations/translations.json");
       const expectedContent = { key1: "value1", key2: "value2" };
 
       // When
