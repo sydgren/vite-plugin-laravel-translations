@@ -1,6 +1,6 @@
 {
   "name": "@sydgren/vite-plugin-laravel-translations",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "description": "Vite 8 plugin that makes Laravel translations available as a JSON variable for i18n frameworks.",
   "author": "Henrik Nordquist",

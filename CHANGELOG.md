@@ -1,3 +1,12 @@
+# Changelog
+
+## [1.0.1](https://github.com/sydgren/vite-plugin-laravel-translations/compare/vite-plugin-laravel-translations-v1.0.0...vite-plugin-laravel-translations-v1.0.1) (2026-06-15)
+
+
+### Bug Fixes
+
+* read JSON translation files directly instead of via dynamic import ([#3](https://github.com/sydgren/vite-plugin-laravel-translations/issues/3)) ([1d27d4c](https://github.com/sydgren/vite-plugin-laravel-translations/commit/1d27d4c75efeb811b322d0c8743dd19dd355c733))
+
 ## Release v0.3.0 - Vite Env, Github Workflows & Updates
 
 - Fixed issue with `mergeDeep` function when importing `.json` files using `pnpm`
