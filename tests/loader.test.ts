@@ -3,7 +3,7 @@ import {
   globPattern,
   configureNamespaceIfNeeded,
   translationContentByFileExtension,
-  generateNestedObjectStructure,
+  setNestedValue,
   replaceInterpolation,
   buildTranslations,
 } from "../src/loader";
@@ -105,26 +105,38 @@ describe("Loader feature", () => {
     });
   });
 
-  describe("generateNestedObjectStructure function", () => {
-    it("should return the nested object structure", () => {
-      // Given
-      const pathSplit = ["path", "to", "file"];
-      const expectedStructure = { path: { to: { file: {} } } };
-
-      // When
-      const structure = generateNestedObjectStructure(pathSplit, {});
-
-      // Then
-      expect(structure).toEqual(expectedStructure);
-    });
-
-    it("should return the nested object structure with existing object", () => {
+  describe("setNestedValue function", () => {
+    it("should nest the value under the path", () => {
       // Given
       const pathSplit = ["path", "to", "file"];
       const expectedStructure = { path: { to: { file: { key: "value" } } } };
 
       // When
-      const structure = generateNestedObjectStructure(pathSplit, { key: "value" });
+      const structure = setNestedValue({}, pathSplit, { key: "value" });
+
+      // Then
+      expect(structure).toEqual(expectedStructure);
+    });
+
+    it("should keep sibling values already present at the path", () => {
+      // Given
+      const target = { en: { auth: { failed: "Failed" } } };
+      const expectedStructure = { en: { auth: { failed: "Failed" }, validation: { required: "Required" } } };
+
+      // When
+      const structure = setNestedValue(target, ["en", "validation"], { required: "Required" });
+
+      // Then
+      expect(structure).toEqual(expectedStructure);
+    });
+
+    it("should merge when a locale is both a file and a directory", () => {
+      // Given — Laravel allows lang/en.json alongside lang/en/auth.php
+      const target = { en: { auth: { failed: "Failed" } } };
+      const expectedStructure = { en: { auth: { failed: "Failed" }, "Welcome!": "Velkommen!" } };
+
+      // When
+      const structure = setNestedValue(target, ["en"], { "Welcome!": "Velkommen!" });
 
       // Then
       expect(structure).toEqual(expectedStructure);
@@ -132,11 +144,48 @@ describe("Loader feature", () => {
   });
 
   describe("replaceInterpolation function", () => {
+    const interpolation = { prefix: "{{", suffix: "}}" };
+
     it("should return the object structure with the new interpolation", () => {
       // Given
       const object = { key: "{{value}}" };
-      const interpolation = { prefix: "{{", suffix: "}}" };
       const expectedObject = { key: "{{value}}" };
+
+      // When
+      const newObject = replaceInterpolation(object, interpolation);
+
+      // Then
+      expect(newObject).toEqual(expectedObject);
+    });
+
+    it("should rewrite Laravel placeholders in string values", () => {
+      // Given
+      const object = { greeting: "Welcome :name", nested: { bye: "Bye :name" } };
+      const expectedObject = { greeting: "Welcome {{name}}", nested: { bye: "Bye {{name}}" } };
+
+      // When
+      const newObject = replaceInterpolation(object, interpolation);
+
+      // Then
+      expect(newObject).toEqual(expectedObject);
+    });
+
+    it("should leave non-string values untouched", () => {
+      // Given — serialising the whole tree used to produce invalid JSON here
+      const object = { count: 5, enabled: true, missing: null, list: [1, "Hi :name"] };
+      const expectedObject = { count: 5, enabled: true, missing: null, list: [1, "Hi {{name}}"] };
+
+      // When
+      const newObject = replaceInterpolation(object, interpolation);
+
+      // Then
+      expect(newObject).toEqual(expectedObject);
+    });
+
+    it("should not mistake time-like strings for placeholders", () => {
+      // Given
+      const object = { openingHours: "Open at 12:30" };
+      const expectedObject = { openingHours: "Open at 12:30" };
 
       // When
       const newObject = replaceInterpolation(object, interpolation);

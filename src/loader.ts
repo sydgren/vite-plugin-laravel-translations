@@ -1,14 +1,14 @@
-/**
- * ------------------------------------------------
- *  # Import: Dependencies
- * ------------------------------------------------
- */
-import { readFileSync } from "node:fs";
-import { globSync } from "glob";
+import { globSync, readFileSync } from "node:fs";
 import { join, extname, sep } from "node:path";
 import { fromString } from "php-array-reader";
 import { mergeDeep } from "./utils/mergeDeep";
 import { TranslationConfiguration, InterpolationConfiguration, TranslationContentInterpolable } from "../types/index";
+
+/**
+ * Laravel placeholders are `:name`. Requiring a leading letter or underscore
+ * keeps time-like values such as "12:30" from being mistaken for placeholders.
+ */
+const LARAVEL_PLACEHOLDER = /:([a-zA-Z_]\w*)/g;
 
 /**
  * Get the glob pattern based on the configuration
@@ -47,26 +47,58 @@ export const translationContentByFileExtension = (fileExtension: string, file: s
 };
 
 /**
- * Generate the nested object structure
+ * Write a value at a nested path, merging when the path already holds content.
  *
- * @param pathSplit - The path split
- * @param all - The all object
- * @returns - The nested object structure
+ * Laravel allows a locale to be both a file and a directory (`lang/en.json`
+ * alongside `lang/en/auth.php`), so an occupied leaf is merged, not replaced.
+ *
+ * @param target - The object to write into
+ * @param path - The path segments to nest the value under
+ * @param value - The value to place at the leaf
+ * @returns object - The target, mutated
  */
-export const generateNestedObjectStructure = (pathSplit: string[], value: unknown): object =>
-  pathSplit.toReversed().reduce<object>((acc, item) => ({ [item]: acc }), value as object);
+export const setNestedValue = (target: Record<string, unknown>, path: string[], value: unknown): object => {
+  const leafKey = path[path.length - 1];
+
+  const parent = path.slice(0, -1).reduce<Record<string, unknown>>((node, key) => {
+    const child = node[key];
+
+    if (!child || typeof child !== "object") {
+      node[key] = {};
+    }
+
+    return node[key] as Record<string, unknown>;
+  }, target);
+
+  parent[leafKey] = leafKey in parent ? mergeDeep(parent[leafKey], value) : value;
+
+  return target;
+};
 
 /**
  * Replace the interpolation with provided prefix and suffix
  *
- * @param object - The object structure
+ * Walks the structure so only string values are rewritten — serialising the
+ * whole tree would corrupt numeric values and other non-string content.
+ *
+ * @param value - The object structure
  * @param interpolation - An object with prefix and suffix to be used by interpolation
  * @returns - The object structure with the new interpolation
  */
-export const replaceInterpolation = (object: unknown, interpolation: InterpolationConfiguration): object => {
-  const interpolatedContent = `${interpolation.prefix}$1${interpolation.suffix}`;
-  const objectAsString = JSON.stringify(object).replace(/:(\w+)/g, interpolatedContent);
-  return JSON.parse(objectAsString);
+export const replaceInterpolation = (value: unknown, interpolation: InterpolationConfiguration): unknown => {
+  if (typeof value === "string") {
+    return value.replace(LARAVEL_PLACEHOLDER, `${interpolation.prefix}$1${interpolation.suffix}`);
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => replaceInterpolation(item, interpolation));
+  }
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, replaceInterpolation(item, interpolation)]));
+  }
+
+  return value;
 };
 
 /**
@@ -80,22 +112,23 @@ export const buildTranslations = (absLangPath: string, pluginConfiguration: Tran
   // Define the language directory
   const langDir = pluginConfiguration.absoluteLanguageDirectory || absLangPath;
 
-  // Fetch filenames as an array
-  const files = globSync(join(langDir, globPattern(pluginConfiguration.includeJson || false)));
+  // Fetch filenames, relative to the language directory
+  const files = globSync(globPattern(pluginConfiguration.includeJson || false), { cwd: langDir });
 
   // Create translations object
-  return files.reduce<object>((translations, file) => {
-    // Extract the file path, extension and path split
-    const fileRaw = file.replace(langDir + sep, "");
-    const fileExtension = extname(fileRaw);
-    const pathSplit = fileRaw.replace(fileExtension, "").split(sep);
+  return files.reduce<Record<string, unknown>>((translations, file) => {
+    // Extract the file extension and the path it should nest under
+    const fileExtension = extname(file);
+    const pathSplit = file.slice(0, -fileExtension.length || undefined).split(sep);
 
     // Build the translation content and nest it under its path
-    const translationContent = buildContentInterpolation({ file, fileExtension, pluginConfiguration });
-    const namespacePath = configureNamespaceIfNeeded(pathSplit, pluginConfiguration.namespace);
-    const currentTranslationStructure = generateNestedObjectStructure(namespacePath, translationContent);
+    const translationContent = buildContentInterpolation({
+      file: join(langDir, file),
+      fileExtension,
+      pluginConfiguration,
+    });
 
-    return mergeDeep(translations, currentTranslationStructure) as object;
+    return setNestedValue(translations, configureNamespaceIfNeeded(pathSplit, pluginConfiguration.namespace), translationContent) as Record<string, unknown>;
   }, {});
 };
 
@@ -112,6 +145,6 @@ const buildContentInterpolation = ({ file, fileExtension, pluginConfiguration }:
   const translationContent = translationContentByFileExtension(fileExtension, file);
 
   return pluginConfiguration.interpolation?.prefix && pluginConfiguration.interpolation?.suffix
-    ? replaceInterpolation(translationContent, pluginConfiguration.interpolation)
+    ? (replaceInterpolation(translationContent, pluginConfiguration.interpolation) as object)
     : translationContent;
 };
