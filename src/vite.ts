@@ -1,28 +1,27 @@
-/**
- * ------------------------------------------------
- *  # Import: Dependencies
- * ------------------------------------------------
- */
+import { sep } from "node:path";
 import { determineLaravelVersion, getLangDir } from "./laravel";
 import { buildTranslations } from "./loader";
 import type { TranslationConfiguration } from "../types";
-import type { HmrContext } from "vite";
+import type { HmrContext, Plugin } from "vite";
 
-/**
- * ------------------------------------------------
- *  # Setup: Main Function
- * ------------------------------------------------
- */
-export default async function laravelTranslations(pluginConfiguration: TranslationConfiguration = {}) {
-  // # Define: Default Configurations
-  const defaultConfigurations: TranslationConfiguration = {
+/** Vite reports watched files with posix separators, so compare on those. */
+const toPosixPath = (path: string): string => (sep === "/" ? path : path.replaceAll(sep, "/"));
+
+export default function laravelTranslations(pluginConfiguration: TranslationConfiguration = {}): Plugin {
+  // # Merge: Configurations over the defaults
+  const configuration: TranslationConfiguration = {
     namespace: false,
     includeJson: false,
     absoluteLanguageDirectory: null,
+    ...pluginConfiguration,
   };
 
   // # Retrieve: Laravel Path (Absolute)
-  const absPathForLangDir = pluginConfiguration.absoluteLanguageDirectory || getLangDir(determineLaravelVersion());
+  const absPathForLangDir = configuration.absoluteLanguageDirectory || getLangDir(determineLaravelVersion());
+
+  // # Determine: Which files an HMR update should restart the server for
+  const watchedDirectory = toPosixPath(absPathForLangDir);
+  const watchedExtensions = configuration.includeJson ? [".php", ".json"] : [".php"];
 
   return {
     // # Define: Plugin Name for Vite
@@ -30,22 +29,19 @@ export default async function laravelTranslations(pluginConfiguration: Translati
 
     // # Plugin: Configuration Hook (like construct)
     config() {
-      // # Merge: Configurations
-      pluginConfiguration = Object.assign({}, defaultConfigurations, pluginConfiguration);
-
       // # Assign: Translations as import.meta.env.VITE_LARAVEL_TRANSLATIONS
       return {
         define: {
-          "import.meta.env.VITE_LARAVEL_TRANSLATIONS": buildTranslations(absPathForLangDir, pluginConfiguration),
+          "import.meta.env.VITE_LARAVEL_TRANSLATIONS": buildTranslations(absPathForLangDir, configuration),
         },
       };
     },
+
     handleHotUpdate(context: HmrContext) {
-      // # Determine: Regex to match based on configurations
-      const fileMatchRegex = pluginConfiguration.includeJson ? /lang\/.*\.(?:php|json)$/ : /lang\/.*\.php$/;
+      const file = toPosixPath(context.file);
 
       // # Trigger: Server Restart to pick up changes on file match
-      if (fileMatchRegex.test(context.file)) {
+      if (file.startsWith(`${watchedDirectory}/`) && watchedExtensions.some((extension) => file.endsWith(extension))) {
         context.server.restart();
       }
     },
