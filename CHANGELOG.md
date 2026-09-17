@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/sydgren/vite-plugin-laravel-translations/compare/vite-plugin-laravel-translations-v1.0.1...vite-plugin-laravel-translations-v1.0.2) (2026-09-17)
+
+
+### Bug Fixes
+
+* interpolation corruption, HMR path matching, and footprint ([#5](https://github.com/sydgren/vite-plugin-laravel-translations/issues/5)) ([aaef3dc](https://github.com/sydgren/vite-plugin-laravel-translations/commit/aaef3dc68ba60ea5eff8400316622726255c6bf3))
+
 ## [1.0.1](https://github.com/sydgren/vite-plugin-laravel-translations/compare/vite-plugin-laravel-translations-v1.0.0...vite-plugin-laravel-translations-v1.0.1) (2026-06-15)
 
 
