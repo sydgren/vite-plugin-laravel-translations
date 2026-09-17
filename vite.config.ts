@@ -8,12 +8,9 @@ const NODE_BUILT_IN_MODULES = builtinModules
   .map((m) => `node:${m}`);
 
 // # Build/Export: Vite Configuration
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(() => {
   // # Return: Configuration
   return {
-    server: {
-      host: "0.0.0.0",
-    },
     build: {
       outDir: "./dist",
       target: "esnext",
@@ -24,17 +21,8 @@ export default defineConfig(({ command, mode }) => {
         formats: ["es", "cjs"],
       },
       rolldownOptions: {
-        external: [...NODE_BUILT_IN_MODULES, "php-array-reader", "glob"],
+        external: [...NODE_BUILT_IN_MODULES, "php-array-reader"],
       },
     },
-    optimizeDeps: {
-      exclude: [...NODE_BUILT_IN_MODULES, "php-array-reader", "glob"],
-    },
-    resolve: {
-      alias: {
-        "@": resolve(__dirname, "src"),
-      },
-    },
-    plugins: [],
   } satisfies UserConfig;
 });

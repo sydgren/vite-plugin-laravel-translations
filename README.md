@@ -191,9 +191,13 @@ plugins: [
 ],
 ```
 
+Only string values are rewritten, and a placeholder must start with a letter or
+underscore — so numbers, booleans and time-like values such as `12:30` are left
+untouched.
+
 ## Hot-Module Replacement (HMR)
 
-When running `vite` with dev server running, any changes on any detected `lang/` folder for `.{php,json}` files will restart `vite` dev server so that the language configurations can be updated.
+When running `vite` with the dev server running, changes to `.php` files (and `.json` files when `includeJson` is enabled) inside the resolved language directory restart the `vite` dev server so the translations are rebuilt. This follows `absoluteLanguageDirectory` when you set one.
 
 ## Development
 
@@ -203,6 +207,7 @@ Requires Node 24+.
 pnpm install
 pnpm run lint    # oxlint
 pnpm run format  # prettier
+pnpm run typecheck # tsc --noEmit
 pnpm run test    # vitest
 pnpm run build   # vite (Rolldown) -> dist/
 ```

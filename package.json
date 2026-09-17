@@ -9,7 +9,8 @@
   "files": [
     "dist",
     "types",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "exports": {
     ".": {
@@ -27,8 +28,9 @@
     "build:watch": "vite build --watch",
     "lint": "oxlint src/",
     "lint:fix": "oxlint src/ --fix",
-    "format": "prettier --write src/ types/",
-    "test": "vitest run"
+    "format": "prettier --write src/ types/ tests/",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "vite",
@@ -52,7 +54,6 @@
     "vitest": "^4.1.9"
   },
   "dependencies": {
-    "glob": "^13.0.6",
     "php-array-reader": "^2.1.4"
   },
   "peerDependencies": {

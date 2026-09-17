@@ -4,7 +4,7 @@
  * ------------------------------------------------
  */
 
-import type { HmrContext } from "vite";
+import type { Plugin } from "vite";
 
 export declare interface TranslationConfiguration {
   namespace?: string | false;
@@ -28,13 +28,5 @@ export declare type TranslationContentInterpolable = {
 };
 
 // # Define: laravelTranslations function (optional return)
-declare function laravelTranslations(pluginConfiguration?: TranslationConfiguration): Promise<{
-  name: string;
-  config(): Promise<{
-    define: {
-      [x: string]: object;
-    };
-  }>;
-  handleHotUpdate(context: HmrContext): void;
-}>;
+declare function laravelTranslations(pluginConfiguration?: TranslationConfiguration): Plugin;
 export default laravelTranslations;

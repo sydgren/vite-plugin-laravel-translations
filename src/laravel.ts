@@ -1,8 +1,3 @@
-/**
- * ------------------------------------------------
- *  # Import: Dependencies
- * ------------------------------------------------
- */
 import { resolve } from "node:path";
 import { readFileSync } from "node:fs";
 
@@ -14,13 +9,41 @@ import { readFileSync } from "node:fs";
  */
 export const determineLaravelVersion = (composerPath: string = "composer.json"): number => {
   // # Read: composer.json and parse it
-  const composer = JSON.parse(readFileSync(composerPath, { encoding: "utf8" }));
+  let composer: { require?: Record<string, string> };
+
+  try {
+    composer = JSON.parse(readFileSync(composerPath, { encoding: "utf8" }));
+  } catch (error) {
+    throw new Error(
+      `[laravelTranslations] Could not read "${composerPath}" to detect the Laravel version. ` +
+        `Run Vite from your Laravel project root, or set the "absoluteLanguageDirectory" option to skip detection. ` +
+        `(${(error as Error).message})`,
+      { cause: error },
+    );
+  }
 
   // # Extract: Laravel framework version using the first (0) index
-  const [laravelVersionString] = composer.require["laravel/framework"].split(".");
+  const constraint = composer.require?.["laravel/framework"];
+
+  if (!constraint) {
+    throw new Error(
+      `[laravelTranslations] "${composerPath}" has no "laravel/framework" requirement, so the lang/ directory cannot be located. ` +
+        `Set the "absoluteLanguageDirectory" option to point at it directly.`,
+    );
+  }
+
+  const [laravelVersionString] = constraint.split(".");
+  const laravelVersion = parseInt(laravelVersionString.replace(/\D/g, ""));
+
+  if (Number.isNaN(laravelVersion)) {
+    throw new Error(
+      `[laravelTranslations] Could not read a major version from the "laravel/framework" constraint "${constraint}". ` +
+        `Set the "absoluteLanguageDirectory" option to point at your lang/ directory directly.`,
+    );
+  }
 
   // # Return: Laravel Version as Integer
-  return parseInt(laravelVersionString.replace(/\D/g, ""));
+  return laravelVersion;
 };
 
 /**
@@ -31,4 +54,4 @@ export const determineLaravelVersion = (composerPath: string = "composer.json"):
  * 	@returns string - Absolute path to Laravel lang/ folder
  *
  */
-export const getLangDir = (laravelVersion: number = 9) => (laravelVersion >= 9 ? resolve("lang/") : resolve("resources/lang"));
+export const getLangDir = (laravelVersion: number = 9): string => (laravelVersion >= 9 ? resolve("lang/") : resolve("resources/lang"));
